@@ -13,6 +13,7 @@ module.exports = {
     ObstacleAvoidanceControlCapabilityMqttHandle: require("./ObstacleAvoidanceControlCapabilityMqttHandle"),
     PetObstacleAvoidanceControlCapabilityMqttHandle: require("./PetObstacleAvoidanceControlCapabilityMqttHandle"),
     PresetSelectionCapabilityMqttHandle: require("./PresetSelectionCapabilityMqttHandle"),
+    QuirksCapabilityMqttHandle: require("./QuirksCapabilityMqttHandle"),
     SpeakerVolumeControlCapabilityMqttHandle: require("./SpeakerVolumeControlCapabilityMqttHandle"),
     TotalStatisticsCapabilityMqttHandle: require("./TotalStatisticsCapabilityMqttHandle"),
     WifiConfigurationCapabilityMqttHandle: require("./WifiConfigurationCapabilityMqttHandle"),

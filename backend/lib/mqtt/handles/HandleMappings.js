@@ -23,6 +23,7 @@ const CAPABILITY_TYPE_TO_HANDLE_MAPPING = {
     [capabilities.PetObstacleAvoidanceControlCapability.TYPE]: capabilityHandles.PetObstacleAvoidanceControlCapabilityMqttHandle,
     [capabilities.CarpetModeControlCapability.TYPE]: capabilityHandles.CarpetModeControlCapabilityMqttHandle,
     [capabilities.CarpetSensorModeControlCapability.TYPE]: capabilityHandles.CarpetSensorModeControlCapabilityMqttHandle,
+    [capabilities.QuirksCapability.TYPE]: capabilityHandles.QuirksCapabilityMqttHandle,
 };
 
 const STATUS_ATTR_TO_HANDLE_MAPPING = [
