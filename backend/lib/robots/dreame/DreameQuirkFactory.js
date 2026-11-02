@@ -294,6 +294,268 @@ class DreameQuirkFactory {
                         );
                     }
                 });
+            case DreameQuirkFactory.KNOWN_QUIRKS.MOPPING_WITH_DETERGENT:
+                return new Quirk({
+                    id: id,
+                    title: "Mopping with Detergent",
+                    description: "Select if the dock should add detergent to the robot's clean water tank for mopping.",
+                    options: ["on", "off"],
+                    getter: async () => {
+                        const res = await this.robot.miotHelper.readProperty(
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.MOPPING_WITH_DETERGENT.PIID
+                        );
+
+                        switch (res) {
+                            case 1:
+                                return "on";
+                            case 0:
+                                return "off";
+                            default:
+                                throw new Error(`Received invalid value ${res}`);
+                        }
+                    },
+                    setter: async (value) => {
+                        let val;
+
+                        switch (value) {
+                            case "on":
+                                val = 1;
+                                break;
+                            case "off":
+                                val = 0;
+                                break;
+                            default:
+                                throw new Error(`Received invalid value ${value}`);
+                        }
+
+                        return this.robot.miotHelper.writeProperty(
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.MOPPING_WITH_DETERGENT.PIID,
+                            val
+                        );
+                    }
+                });
+            case DreameQuirkFactory.KNOWN_QUIRKS.MOP_DOCK_DETERGENT_TANK_A:
+                return new Quirk({
+                    id: id,
+                    title: "Tank A Detergent",
+                    description: "Select if MOVA detergent from Tank A should be used during mop washing.",
+                    options: ["on", "off"],
+                    getter: async () => {
+                        const res = await this.robot.miotHelper.readProperty(
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_A.PIID
+                        );
+
+                        switch (res) {
+                            case 1:
+                                return "on";
+                            case 0:
+                                return "off";
+                            default:
+                                throw new Error(`Received invalid value ${res}`);
+                        }
+                    },
+                    setter: async (value) => {
+                        let val;
+
+                        switch (value) {
+                            case "on":
+                                val = 1;
+                                break;
+                            case "off":
+                                val = 0;
+                                break;
+                            default:
+                                throw new Error(`Received invalid value ${value}`);
+                        }
+
+                        return this.robot.miotHelper.writeProperty(
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                            DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_A.PIID,
+                            val
+                        );
+                    }
+                });
+            case DreameQuirkFactory.KNOWN_QUIRKS.MOP_DOCK_DETERGENT_TANK_B:
+                return new Quirk({
+                    id: id,
+                    title: "Tank B Detergent",
+                    description: "Select which cleaning solution Tank B contains. Changing the solution resets its usage frequency to Standard.",
+                    options: ["off", "pet", "wood_floor"],
+                    getter: async () => {
+                        const [petDetergent, woodFloorCare] = await Promise.all([
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID
+                            ),
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID
+                            )
+                        ]);
+
+                        if ([1, 2].includes(petDetergent)) {
+                            // MOVAhome prefers Tank B when both properties are unexpectedly nonzero.
+                            return "pet";
+                        } else if ([1, 2].includes(woodFloorCare)) {
+                            return "wood_floor";
+                        } else if (petDetergent === 0 && woodFloorCare === 0) {
+                            return "off";
+                        } else {
+                            throw new Error(
+                                `Received invalid Tank B values ${petDetergent}/${woodFloorCare}`
+                            );
+                        }
+                    },
+                    setter: async (value) => {
+                        const [currentPetDetergent, currentWoodFloorCare] = await Promise.all([
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID
+                            ),
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID
+                            )
+                        ]);
+
+                        if (value === "off") {
+                            if (currentPetDetergent !== 0) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID,
+                                    0
+                                );
+                            }
+
+                            if (currentWoodFloorCare !== 0) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID,
+                                    0
+                                );
+                            }
+                        } else if (value === "pet") {
+                            if (currentWoodFloorCare !== 0) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID,
+                                    0
+                                );
+                            }
+
+                            if (currentPetDetergent !== 1) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID,
+                                    1
+                                );
+                            }
+                        } else if (value === "wood_floor") {
+                            if (currentPetDetergent !== 0) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID,
+                                    0
+                                );
+                            }
+
+                            if (currentWoodFloorCare !== 1) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID,
+                                    1
+                                );
+                            }
+                        } else {
+                            throw new Error(`Received invalid value ${value}`);
+                        }
+                    }
+                });
+            case DreameQuirkFactory.KNOWN_QUIRKS.MOP_DOCK_DETERGENT_TANK_B_FREQUENCY:
+                return new Quirk({
+                    id: id,
+                    title: "Tank B Detergent Usage Frequency",
+                    description: "Standard uses Tank B detergent once a week for all-day mopping tasks. High Frequency uses it during every mop-washing cycle. This controls usage cadence, not concentration.",
+                    options: ["standard", "high_frequency", "Tank B disabled"],
+                    getter: async () => {
+                        const [petDetergent, woodFloorCare] = await Promise.all([
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID
+                            ),
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID
+                            )
+                        ]);
+
+                        if (petDetergent === 1 || (petDetergent === 0 && woodFloorCare === 1)) {
+                            return "standard";
+                        } else if (petDetergent === 2 || (petDetergent === 0 && woodFloorCare === 2)) {
+                            return "high_frequency";
+                        } else if (petDetergent === 0 && woodFloorCare === 0) {
+                            return "Tank B disabled";
+                        } else {
+                            throw new Error(
+                                `Received invalid Tank B values ${petDetergent}/${woodFloorCare}`
+                            );
+                        }
+                    },
+                    setter: async (value) => {
+                        let frequency;
+
+                        switch (value) {
+                            case "standard":
+                                frequency = 1;
+                                break;
+                            case "high_frequency":
+                                frequency = 2;
+                                break;
+                            case "Tank B disabled":
+                                throw new Error("Select a Tank B detergent before setting its frequency");
+                            default:
+                                throw new Error(`Received invalid value ${value}`);
+                        }
+
+                        const [petDetergent, woodFloorCare] = await Promise.all([
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID
+                            ),
+                            this.robot.miotHelper.readProperty(
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID
+                            )
+                        ]);
+
+                        if ([1, 2].includes(petDetergent) && woodFloorCare === 0) {
+                            if (petDetergent !== frequency) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B.PIID,
+                                    frequency
+                                );
+                            }
+                        } else if (petDetergent === 0 && [1, 2].includes(woodFloorCare)) {
+                            if (woodFloorCare !== frequency) {
+                                await this.robot.miotHelper.writeProperty(
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.SIID,
+                                    DreameMiotServices["GEN2"].MOP_EXPANSION.PROPERTIES.DETERGENT_TANK_B_WOOD_FLOOR_CARE.PIID,
+                                    frequency
+                                );
+                            }
+                        } else if (petDetergent === 0 && woodFloorCare === 0) {
+                            throw new Error("Select a Tank B detergent before setting its frequency");
+                        } else {
+                            throw new Error(
+                                `Received invalid Tank B values ${petDetergent}/${woodFloorCare}`
+                            );
+                        }
+                    }
+                });
             case DreameQuirkFactory.KNOWN_QUIRKS.MOP_DOCK_WET_DRY_SWITCH:
                 return new Quirk({
                     id: id,
@@ -1101,6 +1363,10 @@ DreameQuirkFactory.KNOWN_QUIRKS = {
     MOP_DOCK_MOP_CLEANING_FREQUENCY: "a6709b18-57af-4e11-8b4c-8ae33147ab34",
     MOP_DOCK_UV_TREATMENT: "7f97b603-967f-44f0-9dfb-35bcdc21f433",
     MOP_DOCK_DETERGENT: "a2a03d42-c710-45e5-b53a-4bc62778589f",
+    MOPPING_WITH_DETERGENT: "8bab18b3-719e-4911-a25c-1dbe8d918dcd",
+    MOP_DOCK_DETERGENT_TANK_A: "821ede1c-3354-4585-88e2-e2af6c9351b1",
+    MOP_DOCK_DETERGENT_TANK_B: "0c086b41-3ea1-44be-ab41-41316b91560a",
+    MOP_DOCK_DETERGENT_TANK_B_FREQUENCY: "ea5ff901-3503-42db-a295-3c8ad6a38d79",
     MOP_DOCK_WET_DRY_SWITCH: "66adac0f-0a16-4049-b6ac-080ef702bb39",
     MOP_DOCK_AUTO_REPAIR_TRIGGER: "ae753798-aa4f-4b35-a60c-91e7e5ae76f3",
     DRAIN_INTERNAL_WATER_TANK: "3e1b0851-3a5a-4943-bea6-dea3d7284bff",

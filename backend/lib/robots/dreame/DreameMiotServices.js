@@ -651,6 +651,18 @@ module.exports = {
                 AGGRESSIVE_ERP_POWER_SAVING: {
                     PIID: 30
                 },
+                DETERGENT_TANK_A: {
+                    PIID: 44
+                },
+                DETERGENT_TANK_B: {
+                    PIID: 45
+                },
+                MOPPING_WITH_DETERGENT: {
+                    PIID: 52
+                },
+                DETERGENT_TANK_B_WOOD_FLOOR_CARE: {
+                    PIID: 76
+                },
                 HURDLE_CROSSING_MODE: {
                     PIID: 38
                 },
